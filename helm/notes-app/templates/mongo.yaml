@@ -4,11 +4,11 @@ metadata:
   name: {{ .Release.Name }}-mongo-init
 data:
   init-mongo.js: |
-    db = db.getSiblingDB("{{ .Values.mongo.database }}");
+    db = db.getSiblingDB("notes");
     db.createUser({
       user: process.env.MONGO_APP_USER,
       pwd: process.env.MONGO_APP_PASSWORD,
-      roles: [{ role: "readWrite", db: "{{ .Values.mongo.database }}" }],
+      roles: [{ role: "readWrite", db: "notes" }],
     });
 ---
 apiVersion: v1
@@ -40,14 +40,16 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: {{ .Values.mongo.image }}:{{ .Values.mongo.tag }}
+          image: mongo:8.0
           ports:
-            - containerPort: {{ .Values.mongo.port }}
+            - containerPort: 27017
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-mongo-root
             - secretRef:
                 name: {{ .Release.Name }}-mongo-app
+          resources:
+            {{- toYaml .Values.mongo.resources | nindent 12 }}
           volumeMounts:
             - name: data
               mountPath: /data/db
@@ -69,4 +71,4 @@ spec:
   selector:
     app: {{ .Release.Name }}-mongo
   ports:
-    - port: {{ .Values.mongo.port }}
+    - port: 27017
