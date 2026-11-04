@@ -26,7 +26,7 @@ diagnostics/    Docker Compose (compose-fix.yml funcional, compose-broken.yml co
 
 ## Opción 1: Docker Compose (local)
 
-📂 **Se ejecuta desde `diagnostics/`** (se entra con `cd diagnostics` desde la raíz). Todos los comandos de esta sección, incluidos `ps`, `logs` y `down`, deben correrse ahí: el `-f compose-fix.yml` y las rutas relativas del archivo (`../api`, `./init-mongo.js`) dependen de ese directorio.
+📂 **Se ejecuta desde `diagnostics/`**
 
 **Bash**
 
@@ -66,7 +66,7 @@ Orden de arranque (`depends_on` con healthchecks): `mongo` (healthy) → `api` (
 
 Requisitos: un cluster y `kubectl` configurado. **En nuestro caso se usó minikube** como cluster local; los comandos de esta sección y de la siguiente funcionan igual en cualquier otro cluster.
 
-📂 **Se ejecuta desde la raíz del repo** (si venías de la sección anterior, vuelve con `cd ..`). Los comandos usan rutas como `k8s/00-namespace.yaml`, que solo resuelven desde ahí.
+📂 **Se ejecuta desde la raíz del repo** (si venías de la sección anterior, vuelve con `cd ..`)
 
 Los YAML **no incluyen las contraseñas**: hay que crear los Secrets a mano antes de aplicar `01-mongo.yaml`. Sin ellos el pod de mongo queda en `CreateContainerConfigError`.
 
