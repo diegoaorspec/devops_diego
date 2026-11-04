@@ -1,2 +1,7 @@
 __pycache__/
 .pytest_cache/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
