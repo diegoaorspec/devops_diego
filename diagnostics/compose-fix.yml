@@ -1,0 +1,52 @@
+
+name: notes-app
+
+services:
+  mongo:
+    image: mongo:8.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rootpass}
+      MONGO_APP_USER: notes_app
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:-notes_pass}
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ../api
+    image: notes-api:local
+    environment:
+      MONGO_URI: mongodb://notes_app:${MONGO_APP_PASSWORD:-notes_pass}@mongo:27017/notes
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: ../frontend
+    image: notes-web:local
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
+    name: notes-mongo-data
+
+  mongo-config:
+    name: notes-mongo-config

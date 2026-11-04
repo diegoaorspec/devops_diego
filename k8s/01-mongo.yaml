@@ -1,0 +1,77 @@
+# Requiere los Secrets "mongo-root" y "mongo-app" (se crean con kubectl, ver README)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-init
+  namespace: notes-app
+data:
+  init-mongo.js: |
+    db = db.getSiblingDB("notes");
+    db.createUser({
+      user: process.env.MONGO_APP_USER,
+      pwd: process.env.MONGO_APP_PASSWORD,
+      roles: [{ role: "readWrite", db: "notes" }],
+    });
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+  namespace: notes-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: notes-app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:8.0
+          ports:
+            - containerPort: 27017
+          envFrom:
+            - secretRef:
+                name: mongo-root
+            - secretRef:
+                name: mongo-app
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mongo-data
+        - name: init
+          configMap:
+            name: mongo-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: notes-app
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017

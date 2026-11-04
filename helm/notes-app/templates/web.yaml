@@ -1,0 +1,62 @@
+# Config de Nginx: sirve el frontend y reenvía /api/v1/ al Service de la API de esta release.
+# La imagen del frontend no trae config propia (como en el diseño original).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-web
+data:
+  default.conf: |
+    server {
+      listen {{ .Values.web.port }};
+      root /usr/share/nginx/html;
+      index index.html;
+
+      location /api/v1/ {
+        proxy_pass http://{{ .Release.Name }}-api:{{ .Values.api.port }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+
+      location / {
+        try_files $uri $uri/ /index.html;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.web.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-web
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-web
+    spec:
+      containers:
+        - name: web
+          image: {{ .Values.web.image }}:{{ .Values.web.tag }}
+          imagePullPolicy: {{ .Values.web.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.web.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  type: {{ .Values.web.serviceType }}
+  selector:
+    app: {{ .Release.Name }}-web
+  ports:
+    - port: {{ .Values.web.port }}

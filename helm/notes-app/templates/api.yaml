@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-api
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.api.image }}:{{ .Values.api.tag }}
+          imagePullPolicy: {{ .Values.api.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-mongo-app
+          env:
+            - name: MONGO_URI
+              value: mongodb://$(MONGO_APP_USER):$(MONGO_APP_PASSWORD)@{{ .Release.Name }}-mongo:{{ .Values.mongo.port }}/{{ .Values.mongo.database }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.api.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api
+spec:
+  selector:
+    app: {{ .Release.Name }}-api
+  ports:
+    - port: {{ .Values.api.port }}

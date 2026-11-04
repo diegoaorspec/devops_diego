@@ -1,0 +1,8 @@
+<main>
+  <h1>Notes</h1>
+  <app-note-form (created)="create($event)" />
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  <app-note-list [notes]="notes()" (deleted)="delete($event)" />
+</main>

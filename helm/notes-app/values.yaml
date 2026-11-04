@@ -1,0 +1,26 @@
+api:
+  image: docker.io/diegoormeno/notes-api
+  tag: latest
+  pullPolicy: IfNotPresent
+  replicas: 2
+  port: 5000
+
+web:
+  image: docker.io/diegoormeno/notes-web
+  tag: latest
+  pullPolicy: IfNotPresent
+  replicas: 2
+  port: 80
+  serviceType: NodePort
+
+mongo:
+  image: mongo
+  tag: "8.0"
+  port: 27017
+  storage: 1Gi
+  database: notes
+  rootUser: root
+  appUser: notes_app
+  # Obligatorias: no se guardan en el repo, se pasan al instalar con --set
+  rootPassword: ""
+  appPassword: ""

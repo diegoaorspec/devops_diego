@@ -1,0 +1,4 @@
+# Forzar LF: los scripts/configs se ejecutan dentro de contenedores Linux
+* text=auto eol=lf
+*.ico binary
+*.pdf binary

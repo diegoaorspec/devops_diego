@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: notes-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: docker.io/diegoormeno/notes-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: mongo-app
+          env:
+            - name: MONGO_URI
+              value: mongodb://$(MONGO_APP_USER):$(MONGO_APP_PASSWORD)@mongo:27017/notes
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: notes-app
+spec:
+  selector:
+    app: api
+  ports:
+    - port: 5000
