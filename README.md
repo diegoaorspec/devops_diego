@@ -64,13 +64,11 @@ Orden de arranque (`depends_on` con healthchecks): `mongo` (healthy) → `api` (
 
 ## Opción 2: Kubernetes con kubectl
 
-Requisitos: un cluster y `kubectl` configurado. **En nuestro caso se usó minikube** como cluster local; los comandos de esta sección y de la siguiente funcionan igual en cualquier otro cluster.
 
 📂 **Se ejecuta desde la raíz del repo** (si venías de la sección anterior, vuelve con `cd ..`)
 
-Los YAML **no incluyen las contraseñas**: hay que crear los Secrets a mano antes de aplicar `01-mongo.yaml`. Sin ellos el pod de mongo queda en `CreateContainerConfigError`.
+Requisitos: un cluster y `kubectl` configurado. **En nuestro caso se usó minikube** como cluster local; los comandos de esta sección y de la siguiente funcionan igual en cualquier otro cluster.
 
-Las contraseñas de los ejemplos (`rootpass` y `notes_pass`) son valores de desarrollo, los mismos que usa por defecto `diagnostics/compose-fix.yml`. En cualquier entorno real cámbialas.
 
 **Bash**
 
